@@ -578,22 +578,22 @@ int PostService::getLikeCount(size_t user_id)
     return count;
 }
 
-std::string PostService::getCreateTime(size_t user_id)
-{
-    auto &redis = RedisService::getInstance();
+// std::string PostService::getCreateTime(size_t user_id)
+// {
+//     auto &redis = RedisService::getInstance();
 
-    std::string time;
+//     std::string time;
 
-    if(redis.getCreateTime(user_id, time))
-        return time;
+//     if(redis.getCreateTime(user_id, time))
+//         return time;
     
-    auto mysql = pool.getConnection();
-    if(mysql->getCreateTime(user_id, time))
-    {
-        redis.setCreateTime(user_id, time);
-    }
-    return time;
-}
+//     auto mysql = pool.getConnection();
+//     if(mysql->getCreateTime(user_id, time))
+//     {
+//         redis.setCreateTime(user_id, time);
+//     }
+//     return time;
+// }
 
 //MySQL -> Redis
 bool PostService::updateAvatar(int user_id, const std::string& avatarUrl)
@@ -619,4 +619,21 @@ std::string PostService::getAvatar(int user_id)
     mysql->getAvatar(user_id, avatar);
 
     return avatar;
+}
+
+bool PostService::getUserStat(int user_id, UserStat& stat)
+{
+    auto &redis = RedisService::getInstance();
+
+    if(redis.getUserStat(user_id, stat))
+    {
+        return true;
+    }
+
+    auto mysql = pool.getConnection();
+    mysql->getUserStat(user_id, stat);
+
+    redis.setUserStat(user_id, stat);
+
+    return true;
 }

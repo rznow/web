@@ -1025,26 +1025,74 @@ bool MySQL::getLikeCount(int user_id, int& count)
     return true;
 }
 
-bool MySQL::getCreateTime(int user_id, std::string& time)
+// bool MySQL::getCreateTime(int user_id, std::string& time)
+// {
+//     Statement stmt(conn,R"(
+//         SELECT 
+//         DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS create_time
+//         FROM user_info
+//         WHERE user_id=?
+//     )");
+
+//     stmt.bindInt(0, user_id);
+
+//     if(!stmt.execute())
+//         return false;
+
+//     stmt.storeResult();
+
+//     if(!stmt.fetch())
+//         return false;
+    
+//     time = stmt.row().getString(0);
+    
+//     return true;
+// }
+
+bool MySQL::getUserStat(int user_id, UserStat& stat)
 {
     Statement stmt(conn,R"(
-        SELECT 
-        DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') AS create_time
-        FROM user_info
-        WHERE user_id=?
+    SELECT
+        DATE_FORMAT(u.create_time,'%Y-%m-%d %H:%i:%s'),
+
+        (
+            SELECT COUNT(*)
+            FROM posts
+            WHERE user_id=u.user_id
+        ),
+
+        (
+            SELECT COUNT(*)
+            FROM comments
+            WHERE user_id=u.user_id
+        ),
+
+        (
+            SELECT COUNT(*)
+            FROM post_like pl
+            JOIN posts p
+            ON pl.post_id=p.post_id
+            WHERE p.user_id=u.user_id
+        )
+
+    FROM user_info u
+    WHERE u.user_id=?
     )");
 
-    stmt.bindInt(0, user_id);
 
+    stmt.bindInt(0,user_id);
     if(!stmt.execute())
         return false;
-
     stmt.storeResult();
-
     if(!stmt.fetch())
         return false;
-    
-    time = stmt.row().getString(0);
-    
+
+    auto row=stmt.row();
+
+    stat.create_time=row.getString(0);
+    stat.post_count=row.getInt(1);
+    stat.comment_count=row.getInt(2);
+    stat.like_count=row.getInt(3);
+
     return true;
 }

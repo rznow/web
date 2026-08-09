@@ -21,4 +21,15 @@ struct UserInfo
     }
 
 };
+
+struct UserStat
+{
+    int post_count;
+
+    int comment_count;
+
+    int like_count;
+
+    std::string create_time;
+};
 #endif

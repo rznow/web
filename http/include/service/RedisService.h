@@ -25,7 +25,7 @@ class RedisService
         bool expireUser(UserInfo& u) const;
         bool delUser(int user_id) const;
         bool setCreateTime(int user_id, const std::string& time) const;
-        bool getCreateTime(int user_id, std::string& time) const;
+        // bool getCreateTime(int user_id, std::string& time) const;
         bool getAvatar(int user_id, std::string& avatar) const;
 
         bool createPostIndex(std::unordered_map<std::string, std::string>& members);
@@ -118,4 +118,8 @@ class RedisService
         size_t getOnlineCount();
 
         size_t getPostCount();
+
+        bool getUserStat(int user_id, UserStat& stat) const;
+
+        bool setUserStat(int user_id, const UserStat& stat) const;
 };

@@ -65,10 +65,11 @@ class PostService
         int getPostCommentCount(size_t post_id);
         int getCommentCount(size_t user_id);
         int getLikeCount(size_t user_id);
-        std::string getCreateTime(size_t user_id);
+        // std::string getCreateTime(size_t user_id);
         bool updateAvatar(int user_id, const std::string& avatarUrl);
         std::string getAvatar(int user_id);
         // std::string getAvatar(int user_id);    //获取头像
+        bool getUserStat(int user_id, UserStat& stat);
 };
 
 

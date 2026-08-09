@@ -652,10 +652,18 @@ HttpResponse HttpServer::profile(const HttpRequest& request)
     j["user_id"]        = user.user_id;
     j["user_name"]      = user.user_name;
     j["avatar"]         = PostService::getInstance().getAvatar(user.user_id);
-    j["register_time"]  = PostService::getInstance().getCreateTime(user.user_id);
-    j["post_count"]     = PostService::getInstance().getPostCount(user.user_id);
-    j["comment_count"]  = PostService::getInstance().getCommentCount(user.user_id);
-    j["like_count"]     = PostService::getInstance().getLikeCount(user.user_id);
+
+    UserStat stat;
+    PostService::getInstance().getUserStat(user.user_id, stat);
+    j["register_time"]  = stat.create_time;
+    j["post_count"]     = stat.post_count;
+    j["comment_count"]  = stat.comment_count;
+    j["like_count"]     = stat.like_count;
+
+    // j["register_time"]  = PostService::getInstance().getCreateTime(user.user_id);
+    // j["post_count"]     = PostService::getInstance().getPostCount(user.user_id);
+    // j["comment_count"]  = PostService::getInstance().getCommentCount(user.user_id);
+    // j["like_count"]     = PostService::getInstance().getLikeCount(user.user_id);
 
     user.avatar = j["avatar"];
     RedisService::getInstance().setUser(user);
@@ -772,7 +780,6 @@ HttpResponse HttpServer::comments(const HttpRequest& request)
 
     j["code"] = 0;
     json comment_array = json::array();
-    
     for(auto &i: roots)
     {
         comment_array.push_back(buildComment(i));
@@ -780,7 +787,7 @@ HttpResponse HttpServer::comments(const HttpRequest& request)
 
     j["comments"] = comment_array;
     // auto t5 = Clock::now();
-    std::string s=j.dump();
+    // std::string s=j.dump();
 
     // auto t6=Clock::now();
     // std::cout<<"rc: "<< t2-t1<<std::endl;

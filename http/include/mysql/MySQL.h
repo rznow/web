@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 class UserInfo;
+class UserStat;
 class Post;
 class Comment;
 class MySQL
@@ -93,5 +94,6 @@ public:
     bool getCommentCount(int user_id, int& count);
     bool getLikeCount(int user_id, int& count);
 
-    bool getCreateTime(int user_id, std::string& time);
+    // bool getCreateTime(int user_id, std::string& time);
+    bool getUserStat(int user_id, UserStat& stat);
 };

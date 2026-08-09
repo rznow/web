@@ -349,17 +349,26 @@ bool Redis::hmget(
             argv.data(),
             argvlen.data());
 
+    if(reply == nullptr)
+    {
+        return false;
+    }
+
     if(reply->type != REDIS_REPLY_ARRAY)
     {
         freeReplyObject(reply);
         return false;
     }
-
+    
     int i=0;
-    for(auto& [key, value] : fields)
+    for(auto& [key,value]:fields)
     {
-        value = reply->element[i++]->str;
-        std::cout<<key<<":  "<<value<<std::endl;
+        auto elem = reply->element[i++];
+
+        if(elem->type == REDIS_REPLY_STRING)
+        {
+            value = elem->str;
+        }else return false;
     }
 
     return true;
@@ -725,7 +734,7 @@ bool Redis::zremrangebyscore(
     return true;
 }
 
-bool Redis::pipeline(
+bool Redis::pipeline(       //pipeline获取内容
     std::vector<std::string>& cmds, 
     std::vector<std::unordered_map<std::string, std::string>>& values)
 {

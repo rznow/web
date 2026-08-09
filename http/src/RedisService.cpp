@@ -101,7 +101,7 @@ bool RedisService::setCreateTime(int user_id, const std::string& time) const
 {
     auto redis = pool.getConnection();
 
-    bool res = redis->set(RedisKey::userCreateTime(user_id), time);
+    bool res = redis->hmset(RedisKey::userStat(user_id), {{UserField::CREATE_TIME, time}});
 
     redis->expire(RedisKey::userCreateTime(user_id), 1800);
 
@@ -109,17 +109,17 @@ bool RedisService::setCreateTime(int user_id, const std::string& time) const
 }
 
 
-bool RedisService::getCreateTime(int user_id, std::string& time) const
-{
-    auto redis = pool.getConnection();
+// bool RedisService::getCreateTime(int user_id, std::string& time) const
+// {
+//     auto redis = pool.getConnection();
 
-    RedisValue rv = redis->get(RedisKey::userCreateTime(user_id));
+//     RedisValue rv = redis->get(RedisKey::userCreateTime(user_id));
 
-    if(!rv.isString()) return false;
+//     if(!rv.isString()) return false;
 
-    time = rv.asString();
-    return true;
-}
+//     time = rv.asString();
+//     return true;
+// }
 
 bool RedisService::getAvatar(int user_id, std::string& avatar) const
 {
@@ -805,4 +805,42 @@ size_t RedisService::getPostCount()
         return count;
     }
     return 0;
+}
+
+bool RedisService::getUserStat(int user_id, UserStat& stat) const
+{
+    auto redis = pool.getConnection();
+
+
+    const std::vector<std::string> STAT = {
+        UserField::POST_COUNT, 
+        UserField::COMMENT_COUNT, 
+        UserField::LIKE_COUNT, 
+        UserField::CREATE_TIME};
+    std::unordered_map<std::string, std::string> fields;
+    for(auto &i:STAT)
+    {
+        fields[i] = "-1";
+    }
+
+    if(!redis->hmget(RedisKey::userStat(user_id),fields)) return false;
+
+    stat.post_count = std::stoi(fields[UserField::POST_COUNT]);
+    stat.comment_count = std::stoi(fields[UserField::COMMENT_COUNT]);
+    stat.like_count = std::stoi(fields[UserField::LIKE_COUNT]);
+    stat.create_time = fields[UserField::CREATE_TIME];
+
+    return true;
+}
+
+bool RedisService::setUserStat(int user_id, const UserStat& stat) const
+{
+    auto redis = pool.getConnection();
+
+    return redis->hmset(RedisKey::userStat(user_id),{
+        {UserField::POST_COUNT,         std::to_string(stat.post_count)},
+        {UserField::COMMENT_COUNT,      std::to_string(stat.comment_count)},
+        {UserField::LIKE_COUNT,         std::to_string(stat.like_count)},
+        {UserField::CREATE_TIME,        stat.create_time}
+        });
 }
